@@ -182,15 +182,15 @@ angular.module('vr.directives.slider', ['ngTouch']).directive('slider',
                 return parseFloat(roundedValue.toFixed(precision));
             }
 
-			/**
-			 * Round the given number to an arbitrary step
-			 * @param {number} value
-			 * @param {number} step
-			 * @returns {number}
-			 */
-			function roundTo(value, step) {
-				return Math.floor((value / step) + 0.5) * step;
-			}
+            /**
+             * Round the given number to an arbitrary step
+             * @param {number} value
+             * @param {number} step
+             * @returns {number}
+             */
+            function roundTo(value, step) {
+              return Math.floor((value / step) + 0.5) * step;
+            }
 
             /**
              * Rounds the buffer up to the nearest full step
@@ -216,7 +216,7 @@ angular.module('vr.directives.slider', ['ngTouch']).directive('slider',
 
             return {
                 restrict: 'EA',
-				require: 'ngModel',
+				        require: 'ngModel',
                 scope: {
                     floor              : '@',   // the minimum possible value
                     ceiling            : '@',   // the maximum possible value
@@ -226,6 +226,11 @@ angular.module('vr.directives.slider', ['ngTouch']).directive('slider',
                     buffer             : '@',   // how close can the two knobs of a dual knob slider get?
                     stickiness         : '@',   // how sticky should the knobs feel...seriously, how did this get all sticky? gross
                     showSteps          : '@',   // show the step value bubbles?
+                    leftLabel          : '@',   // optional label for the left of the slider
+                    rightLabel         : '@',   // optional label for the right of the slider
+                    staticBubbles      : '@',   // allow bubbles to not be updated depending on the closeness of the handle
+                    widthClass         : '@',   // class to be added to all dom elements to set the width instead of static 100%
+                    changeAfterDrop    : '@',   // disable updating the current value until after handle has been dropped
                     ngModel            : '=',   // single knob/dual know low value binding
                     ngModelRange       : '=',   // dual knob high value binding
                     ngDisabled         : '=',   // should the slider be disabled?
@@ -249,8 +254,8 @@ angular.module('vr.directives.slider', ['ngTouch']).directive('slider',
                     // are we gonna show the step bubbles?
                     var showSteps = attributes.showSteps;
 
-					// are we using 'step' or 'step-width'?
-					var stepWidth = attributes.stepWidth?'stepWidth':'step';
+                    // are we using 'step' or 'step-width'?
+                    var stepWidth = attributes.stepWidth?'stepWidth':'step';
 
                     // dual knob?
                     var isDualKnob = !!attributes.ngModelRange,
@@ -413,8 +418,16 @@ angular.module('vr.directives.slider', ['ngTouch']).directive('slider',
 
                     // set up bubbles
                     bindHtml(refs.stepBubs.children().eq(0), expression('translation(step)'));
-                    bindHtml(refs.ceilBub, expression('translation(ceiling)'));
-                    bindHtml(refs.flrBub, expression('translation(floor)'));
+
+                    if(attributes.leftLabel)
+                      bindHtml(refs.flrBub, attributes.leftLabel);
+                    else
+                      bindHtml(refs.flrBub, expression('translation(floor)'));
+                    if(attributes.rightLabel)
+                      bindHtml(refs.ceilBub, attributes.rightLabel);
+                    else
+                      bindHtml(refs.ceilBub, expression('translation(ceiling)'));
+
                     bindHtml(refs.selBub, expression('rangeTranslation(' + refLow + ',' + refHigh + ')'));
                     bindHtml(refs.lowBub, expression('translation(' + refLow + ')'));
                     bindHtml(refs.highBub, expression('translation(' + refHigh + ')'));
@@ -612,11 +625,11 @@ angular.module('vr.directives.slider', ['ngTouch']).directive('slider',
                              */
                             var valueRangeDecoded = 0;
 
-							/**
-							 * The normalized width in percent of a step
-							 * @type {number}
-							 */
-							var stepRange = 1;
+                            /**
+                             * The normalized width in percent of a step
+                             * @type {number}
+                             */
+                            var stepRange = 1;
 
                             /**
                              * How far from a step is the low knob?
@@ -1054,6 +1067,8 @@ angular.module('vr.directives.slider', ['ngTouch']).directive('slider',
                                  */
                                 function adjustBubbles() {
 
+                                    if(scope.staticBubbles == "true")
+                                        return;
                                     /**
                                      * The bubble to use for dual knobs
                                      * @type {object}
@@ -1190,6 +1205,9 @@ angular.module('vr.directives.slider', ['ngTouch']).directive('slider',
                                  * @param {object} event
                                  */
                                 function onMove(event) {
+//                                    if(scope.changeAfterDrop == "true")
+//                                      return;
+
                                     if(pointer) {
                                         // we have a reference to a knob/bar
 
